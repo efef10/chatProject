@@ -222,6 +222,7 @@ function updateUserAge(userName){
             }
             else{
                 user.setAge(age);
+                console.log(`${userName}'s age changed to ${age}`)
                 main();
             }
         });
@@ -253,6 +254,7 @@ function checkOldUserPassword(userName,tries){
         if(user.getPassword() === oldPassword){
             rl.question("please enter new password \n",(password) =>{
                 user.setPassword(password);
+                console.log(`${userName}'s password was updated successfully`)
                 main();
                 }
             );
