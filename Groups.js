@@ -13,7 +13,7 @@ Groups.prototype = {
         }
     },
     removeGroup : function(group){
-        // var users = group.allUsers();
+        // var users = group.getUsers();
         // for(var i=0 ; i<users.length; i++){
         //     users[i].removeUserEvent.unsubscribe(group);
         // }

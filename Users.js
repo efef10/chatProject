@@ -14,13 +14,6 @@ Users.prototype = {
         user.removeUserEvent.fire(user.getUserName());
         this.users[index] = null;
         this.users.splice(index,1);
-    },
-    allUsers:function(){
-        return this.users.map(function (user) {
-            if (!!user) {
-                return user.userName;
-            }
-        });
     },returnUserByName: function (userName){
         if(!!userName){
             for(var i=0; i<this.users.length ; i++){
