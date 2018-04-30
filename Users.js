@@ -30,6 +30,12 @@ Users.prototype = {
     },
     getUsers:function(){
         return this.users;
+    },allUsersNames:function(){
+        return this.users.map(function (user) {
+            if (!!user) {
+                return user.userName;
+            }
+        });
     }
 };
 

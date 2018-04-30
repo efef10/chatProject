@@ -283,7 +283,7 @@ function decision(input){
             break;
 
         case "v": //view users
-            console.log(myUsers.getUsers());
+            console.log(myUsers.allUsersNames());
             main();
             break;
 
