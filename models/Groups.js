@@ -1,3 +1,5 @@
+const {Group}   = require('./Group.js');
+
 function Groups(groups){
 
     //private properties
@@ -7,17 +9,13 @@ function Groups(groups){
 
 // noinspection JSAnnotator
 Groups.prototype = {
-    addGroup : function(group){
-        if(!!group) {
-            this.groups.push(group);
+    addGroup : function(groupName){
+        if(!!groupName) {
+            this.groups.push(new Group(groupName));
         }
     },
-    removeGroup : function(group){
-        // var users = group.getUsers();
-        // for(var i=0 ; i<users.length; i++){
-        //     users[i].removeUserEvent.unsubscribe(group);
-        // }
-        this.groups.splice(this.groups.indexOf(group),1);
+    removeGroup : function(groupName){
+        this.groups.splice(this.groups.indexOf(this.returnGroupByName(groupName)),1);
     },
     allGroupsNames:function(){
         return this.groups.map(function (group) {
@@ -45,8 +43,8 @@ Groups.prototype = {
         return null;
     },
     isEmpty:function(){
-    return this.groups.length === 0;
-}
+        return this.groups.length === 0;
+    }
 };
 
 module.exports.Groups = Groups;

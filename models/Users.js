@@ -1,3 +1,5 @@
+const {User}    = require('./User.js');
+
 function Users(users){
 
     //private properties
@@ -6,12 +8,13 @@ function Users(users){
 }
 
 Users.prototype = {
-    addUser:function(user){
-        this.users.push(user);
+    addUser:function(userName, age, password){
+        this.users.push(new User(userName, age, password));
     },
-    removeUser:function(user){
+    removeUser:function(userName){
+        var user = this.returnUserByName(userName)
         var index = this.users.indexOf(user);
-        user.removeUserEvent.fire(user.getUserName());
+        user.removeUserEvent.fire(userName);
         this.users[index] = null;
         this.users.splice(index,1);
     },returnUserByName: function (userName){
@@ -41,3 +44,4 @@ Users.prototype = {
 
 
 module.exports.Users = Users;
+module.exports.Users.returnUserByName = Users;

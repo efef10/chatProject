@@ -41,10 +41,9 @@ RemoveUserEvent.prototype = {
             }
         );
     },
-    fire: function(o, thisObj) {
-        var scope = thisObj;
+    fire: function(userName) {
         this.handlers.forEach(function(item) {
-            item.fn.call(this,item.user,item.group);
+            item.fn.call(this,item.user.userName,item.group.groupName);
         });
     }
 
