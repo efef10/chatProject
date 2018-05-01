@@ -1,32 +1,30 @@
 const {Users}    = require('../models/Users.js');
 const {Groups}   = require('../models/Groups.js');
 
-class Chat{
-    constructor() {
-        // this.start =
-        this.myGroups = new Groups();
-        this.myUsers = new Users();
-    }
+ class Chat{
 
-    getUsers(){
+     constructor() {
+         this.myGroups = new Groups();
+         this.myUsers = new Users();
+     }
+
+     getUsers(){
         return this.myUsers;
     }
 
-    getGroups(){
+     getGroups(){
         return this.myGroups;
     }
 
-
-
-    addUserToGroup(userName,groupName){
-        var user = this.getUsers().returnUserByName(userName);
-        var group = this.getGroups().returnGroupByName(groupName);
+     addUserToGroup(userName,groupName){
+        var user = this.myUsers.returnUserByName(userName);
+        var group = this.myGroups.returnGroupByName(groupName);
         if(!!user && !!group){
             group.addUser(user);
-            var obj = {fn:this.removeUserFromGroup,
-                       user:user,
-                       group:group};
-            user.removeUserEvent.subscribe(obj);
+            var listener = {fn:this._removeUserFromGroup,
+                            user:user,
+                            group:group};
+            user.removeUserEvent.subscribe(listener);
             return true;
         }
         else{
@@ -35,9 +33,9 @@ class Chat{
 
     }
 
-    removeUserFromGroup(userName,groupName){
-        var user = this.getUsers().returnUserByName(userName);
-        var group = this.getGroups().returnGroupByName(groupName);
+     removeUserFromGroup(userName,groupName){
+        var user = this.myUsers.returnUserByName(userName);
+        var group = this.myGroups.returnGroupByName(groupName);
         if(!!user && !!group){
             group.removeUser(user);
             user.removeUserEvent.unsubscribe(group);
@@ -48,6 +46,18 @@ class Chat{
         }
 
     }
-}
+
+     _removeUserFromGroup(user,group){
+         if(!!user && !!group){
+             group.removeUser(user.getUserName());
+             return true;
+         }
+         else{
+             return false;
+         }
+
+     }
+    }
+
 
 module.exports.Chat = Chat;

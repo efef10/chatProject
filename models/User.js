@@ -6,14 +6,14 @@ function User(userName, age, password){
 }
 
 User.prototype = {
+    getUserName: function () {
+        return this.userName;
+    },
     getAge: function(){
         return this.age;
     },
     setAge : function(age){
         this.age = age;
-    },
-    getUserName: function () {
-        return this.userName;
     },
     getPassword: function() {
         return this.password;
@@ -43,7 +43,7 @@ RemoveUserEvent.prototype = {
     },
     fire: function(userName) {
         this.handlers.forEach(function(item) {
-            item.fn.call(this,item.user.userName,item.group.groupName);
+            item.fn.call(this,item.user,item.group);
         });
     }
 
