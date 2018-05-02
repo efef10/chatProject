@@ -1,19 +1,19 @@
 const {Group}   = require('./Group.js');
+const {User}   = require('./User.js');
 
-function Groups(groups){
+function Groups(groupName){
 
     //private properties
-    this.groups = groups || [];
+    this.head = new Group(groupName);
 
 }
 
 // noinspection JSAnnotator
 Groups.prototype = {
     addGroup : function(groupName){
-        if(!!groupName) {
-            this.groups.push(new Group(groupName));
-        }
+        this.groups.push(new Group(groupName));
     },
+
     removeGroup : function(groupName){
         this.groups.splice(this.groups.indexOf(this.returnGroupByName(groupName)),1);
     },

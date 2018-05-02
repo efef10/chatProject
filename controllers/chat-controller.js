@@ -5,66 +5,62 @@ const {Group} = require('../models/Group.js');
 const {Chat} = require('../models/Chat.js');
 const Menu = require('../views/menu.js');
 
-function ChatController() {
-    const chat = new Chat();
-
-    return{
-        init
-    };
-
-    function init() {
-        Menu.RootMenu(decision);
+class ChatController{
+    constructor() {
+        this.chat = new Chat();
     }
 
-    function decision (input) {
+    init() {
+        Menu.RootMenu(this.decision.bind(this));
+    }
+
+    decision (input) {
         switch (input) {
             case "n": // new user
-                createUser();
+                this.createUser();
                 break;
 
             case "r": // remove user
-                removeUser();
+                this.removeUser();
                 break;
 
             case "v": //view users
-                Menu.log(chat.getUsers().allUsersNames());
-                init();
+                Menu.log(this.chat.getUsers().allUsersNames());
+                this.init();
                 break;
 
             case "c": // create group
-                createGroup();
+                this.createGroup();
                 break;
 
             case "d": // delete group
-                removeGroup();
+                this.removeGroup();
                 break;
 
             case "g": // get all groups
-                Menu.log(chat.getGroups().allGroupsNames());
-                init();
+                Menu.log(this.chat.getGroups().allGroupsNames());
+                this.init();
                 break;
 
             case "l": // get groups and their users
-                allGroupsAndUsers();
-                init();
+                this.allGroupsAndUsers();
+                this.init();
                 break;
 
             case "a": // add user to group
-                addUserToGroup();
+                this.addUserToGroup();
                 break;
 
             case "e": //delete user from group
-                removeUserFromGroup();
+                this.removeUserFromGroup();
                 break;
 
             case "u": //update user age
-                updateAge();
-                //init();
+                this.updateAge();
                 break;
 
             case "p": //update password
-                updatePassword();
-                init();
+                this.updatePassword();
                 break;
 
             case "q": // quit
@@ -73,97 +69,115 @@ function ChatController() {
 
             default: {
                 Menu.log("please choose a letter from the menu");
-                init();
+                this.init();
             }
         }
     }
 
-    function createUser() {
+    createUser() {
         Menu.ask("what is your username? \n",(userName) => {
+            // console.log('create user this', this);
             var myUserName = userName;
             var myAge;
-            if (userNameExists(userName)) {
+            if (this.userNameExists(userName)) {
                 Menu.log(`user ${userName} already exists`);
-                init();
+                this.init();
                 return;
             }
             else {
-                getUserAge();
+                getUserAge.call(this);
             }
 
             function getUserAge() {
+                // console.log('user age this', this);
                 Menu.ask("what is your age? \n",(age) => {
                     if (isNaN(age)) {
                         Menu.log(`please enter numeric value`)
-                        getUserAge();
+                        getUserAge.call(this);
                     }
                     else {
                         myAge = age;
-                        getUserPassword();
+                        getUserPassword.call(this);
                     }
                 });
             }
 
             function getUserPassword() {
                 Menu.ask("enter password? \n",(password) => {
-                    chat.getUsers().addUser(myUserName, myAge, password);
+                    this.chat.getUsers().addUser(myUserName, myAge, password);
                     Menu.log(`user ${userName} added successfully`);
-                    init();
+                    this.init();
                 });
             }
         });
     }
 
-    function removeUser(){
+    removeUser(){
         Menu.ask("choose username \n",(userName) => {
-            if (!userNameExists(userName)) {
+            if (!this.userNameExists(userName)) {
                 Menu.log(`user ${userName} not exists`)
-                init();
+                this.init();
                 return;
             }
             else {
-                chat.getUsers().removeUser(userName);
+                this.chat.getUsers().removeUser(userName);
                 Menu.log(`user ${userName} removed successfully`);
-                init();
+                this.init();
                 return;
             }
         });
     }
 
-    function createGroup(){
+    createGroup(){
         Menu.ask("enter group name \n",(groupName) => {
-            if (groupNameExists(groupName)) {
+            var myGroupName = groupName;
+            if (this.chat.searchGroup(groupName) !== -1) {
                 Menu.log(`group ${groupName} already exists`)
-                init();
+                this.init();
                 return;
             }
-            else {
-                chat.getGroups().addGroup(groupName);
-                Menu.log(`group ${groupName} added successfully`);
-                init();
-                return;
+            else{
+                getParentGroup.call(this);
             }
+
+            function getParentGroup(){
+                Menu.ask(`in which group do you want to add group ${myGroupName} \n`, (parentGroupName)=>{
+                    if (this.chat.searchGroup(parentGroupName) === -1) {
+                        Menu.log(`group ${parentGroupName} does not exist`)
+                        this.init();
+                        return;
+                    }
+                    else{
+                        if(this.chat.addGroup(myGroupName, parentGroupName));{
+                            Menu.log(`group ${myGroupName} added successfully to group ${parentGroupName}`);
+                            this.init();
+                            return;
+                        }
+                    }
+                });
+            }
+
         });
     }
 
-    function removeGroup(){
+    removeGroup(){
         Menu.ask("choose group \n",(groupName) => {
-            if (!groupNameExists(groupName)) {
+            if (!this.groupNameExists(groupName)) {
                 Menu.log(`group ${groupName} not exists`)
-                init();
+                this.init();
                 return;
             }
             else {
-                chat.getGroups().removeGroup(groupName);
+                this.chat.getGroups().removeGroup(groupName);
                 Menu.log(`group ${groupName} removed successfully`);
-                init();
+                this.init();
                 return;
             }
         });
     }
 
-    function allGroupsAndUsers(){
-        var groups = chat.getGroups().allGroups();
+    allGroupsAndUsers(){
+        var groups = this.chat.getGroups().allGroups();
         for (var i=0 ; i<groups.length ; i++){
             Menu.log("group " + groups[i].groupName + ":");
             var currentGroupUsers = groups[i].getUsers();
@@ -175,47 +189,47 @@ function ChatController() {
         }
     }
 
-    function userNameExists(userName) {
-        if (chat.getUsers().returnUserByName(userName)) {
+    userNameExists(userName) {
+        if (this.chat.getUsers().returnUserByName(userName)) {
             return true;
         }
         return false;
     }
 
-    function groupNameExists(groupName) {
-        if (chat.getGroups().returnGroupByName(groupName)) {
+    groupNameExists(groupName) {
+        if (this.chat.getGroups().returnGroupByName(groupName)) {
             return true;
         }
         return false;
     }
 
-    function addUserToGroup(){
+    addUserToGroup(){
         Menu.ask("please enter userName \n", (userName)=>{
-            if (!userNameExists(userName)) {
+            if (!this.userNameExists(userName)) {
                 Menu.log(`user ${userName} not exists`)
-                init();
+                this.init();
                 return;
             }
             else {
-               getGroupName();
+               getGroupName.call(this);
             }
 
             function getGroupName(){
                 Menu.ask("please enter group name \n",(groupName)=>{
-                    if (!groupNameExists(groupName)) {
+                    if (!this.groupNameExists(groupName)) {
                         Menu.log(`group ${groupName} not exists`)
-                        init();
+                        this.init();
                         return;
                     }
-                    else if(chat.getGroups().returnGroupByName(groupName).indexOfUserInGroup(userName) >= 0){
+                    else if(this.chat.getGroups().returnGroupByName(groupName).indexOfUserInGroup(userName) >= 0){
                         Menu.log(`user ${userName} already in group ${groupName}`)
-                        init();
+                        this.init();
                         return;
                     }
                     else{
-                        chat.addUserToGroup(userName,groupName);
+                        this.chat.addUserToGroup(userName,groupName);
                         Menu.log(`user ${userName} added successfully to group ${groupName}`);
-                        init();
+                        this.init();
                         return
                     }
                 });
@@ -223,33 +237,33 @@ function ChatController() {
         });
     }
 
-    function removeUserFromGroup(){
+    removeUserFromGroup(){
         Menu.ask("please enter userName \n", (userName)=>{
-            if (!userNameExists(userName)) {
+            if (!this.userNameExists(userName)) {
                 Menu.log(`user ${userName} not exists`)
-                init();
+                this.init();
                 return;
             }
             else {
-                getGroupName();
+                getGroupName.call(this);
             }
 
             function getGroupName(){
                 Menu.ask("please enter group name \n",(groupName)=>{
-                    if (!groupNameExists(groupName)) {
+                    if (!this.groupNameExists(groupName)) {
                         Menu.log(`group ${groupName} not exists`)
-                        init();
+                        this.init();
                         return;
                     }
-                    else if((chat.getGroups().returnGroupByName(groupName).indexOfUserInGroup(userName)) === -1){
+                    else if((this.chat.getGroups().returnGroupByName(groupName).indexOfUserInGroup(userName)) === -1){
                         Menu.log(`user ${userName} not in group ${groupName}`)
-                        init();
+                        this.init();
                         return;
                     }
                     else{
-                        chat.removeUserFromGroup(userName,groupName);
+                        this.chat.removeUserFromGroup(userName,groupName);
                         Menu.log(`user ${userName} removed successfully from group ${groupName}`);
-                        init();
+                        this.init();
                         return
                     }
                 });
@@ -257,59 +271,59 @@ function ChatController() {
         });
     }
 
-    function updateAge(){
+    updateAge(){
         Menu.ask("enter user name \n",(userName)=>{
-            if(!userNameExists(userName)){
+            if(!this.userNameExists(userName)){
                 Menu.log(`user ${userName} not exists`);
-                init();
+                this.init();
                 return;
             }
             else{
-                getNewAge();
+                getNewAge.call(this);
             }
 
             function getNewAge(){
                 Menu.ask("enter new age \n",(age)=>{
                     if (isNaN(age)) {
                         Menu.log(`please enter numeric value`);
-                        getNewAge();
+                        getNewAge.call(this);
                     }
                     else {
-                        chat.getUsers().returnUserByName(userName).setAge(age);
+                        this.chat.getUsers().returnUserByName(userName).setAge(age);
                         Menu.log(`user's age was updated successfully`);
-                        init();
+                        this.init();
                     }
                 });
             }
         });
     }
 
-    function updatePassword(){
+    updatePassword(){
         Menu.ask("enter user name \n",(userName)=>{
             var user;
-            if(!userNameExists(userName)){
+            if(!this.userNameExists(userName)){
                 Menu.log(`user ${userName} not exists`);
-                init();
+                this.init();
                 return;
             }
             else{
-                user = chat.getUsers().returnUserByName(userName);
-                getOldPassword(3);
+                user = this.chat.getUsers().returnUserByName(userName);
+                getOldPassword.call(this,3);
             }
 
             function getOldPassword(tries){
                 Menu.ask("enter old password \n",(password)=>{
                     if (user.getPassword()===password) {
-                        getNewPassword();
+                        getNewPassword.call(this);
                     }
                     else {
                         if(tries === 0){
                             Menu.log(`error, change password failed due to too much wrong tries`);
-                            init();
+                            this.init();
                             return;
                         }else{
                             Menu.log(`entered password does not match old password, you have ${tries} tries left`);
-                            getOldPassword(tries-1);
+                            getOldPassword.call(this,tries-1);
                         }
                     }
                 });
@@ -317,9 +331,9 @@ function ChatController() {
 
             function getNewPassword(){
                 Menu.ask("enter new password \n",(password)=>{
-                    chat.getUsers().returnUserByName(userName).setPassword(password);
+                    this.chat.getUsers().returnUserByName(userName).setPassword(password);
                     Menu.log(`user's password was updated successfully`);
-                    init();
+                    this.init();
                 });
             }
         });
