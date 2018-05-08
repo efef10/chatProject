@@ -1,6 +1,5 @@
 const {Users}    = require('../models/Users.js');
 const {User}    = require('../models/User.js');
-// const {Groups}   = require('../models/Groups.js');
 const {Group}   = require('../models/Group.js');
 
  class Chat{
@@ -19,16 +18,55 @@ const {Group}   = require('../models/Group.js');
      }
 
      removeUser(userName){
+         var groups = this.allGroupsOfUser(userName);
+         for(var i=0 ; i<groups.length ; i++){
+             groups[i].removeUser(userName);
+         }
          return this.users.removeUser(userName);
+     }
+
+     nameOfAllGroupsOfUser(userName){
+         return this.allGroupsOfUser(userName).map(function (group) {
+             if (!!group) {
+                 return group.groupName;
+             }
+         });
+     }
+
+     allGroupsOfUser(userName, arr, currentGroup){
+         var foundGroups = arr || [];
+         var group = currentGroup;
+         if(group === undefined){
+             group = this.root;
+         }
+         if (group === null || !group.hasChildren()){
+             return foundGroups;
+         }
+         var children = group.getChildren();
+         if(children[0] instanceof User){
+             for (var i=0 ; i<children.length; i++){
+                 if(children[i].getUserName()===userName){
+                     foundGroups.push(group);
+                     break;
+                 }
+             }
+         }
+         else{
+             for (var i=0 ; i<children.length; i++){
+                 this.allGroupsOfUser(userName, foundGroups, children[i]);
+             }
+         }
+         return foundGroups;
      }
 
      addUserToGroup(userName,path){
         var user = this.users.returnUserByName(userName);
         var group = this.getGroupByPath(path);
-        if(!!group && group.addUser(user)){
-            var listener = {user:user,
-                            group:group};
-            user.removeUserEvent.subscribe(listener);
+        var actualGroup = group.addUser(user);
+        if(actualGroup!== null){
+            // var listener = {user:user,
+            //                 group:actualGroup};
+            // user.removeUserEvent.subscribe(listener);
             return true;
         }
         else{
@@ -37,11 +75,11 @@ const {Group}   = require('../models/Group.js');
     }
 
      removeUserFromGroup(userName,path){
-        var user = this.users.returnUserByName(userName);
+        // var user = this.users.returnUserByName(userName);
         var group = this.getGroupByPath(path);
 
          if(!!group && group.removeUser(userName)){
-             user.removeUserEvent.unsubscribe(group);
+             // user.removeUserEvent.unsubscribe(group);
              return true;
          }
          else{

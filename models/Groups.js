@@ -1,37 +1,34 @@
+//cancelled Class for now
+
 const {Group}   = require('./Group.js');
-const {User}   = require('./User.js');
 
-function Groups(groupName){
+class Groups{
+    constructor(groupName){
+        this.root = new Group(groupName);
+    }
 
-    //private properties
-    this.head = new Group(groupName);
-
-}
-
-// noinspection JSAnnotator
-Groups.prototype = {
-    addGroup : function(groupName){
+    addGroup (groupName){
         this.groups.push(new Group(groupName));
-    },
+    }
 
-    removeGroup : function(groupName){
+    removeGroup (groupName){
         var group = this.returnGroupByName(groupName);
-    },
-    allGroupsNames:function(){
+    }
+    allGroupsNames(){
         return this.groups.map(function (group) {
             if (!!group) {
                 return group.groupName;
             }
         });
-    },
-    allGroups:function(){
+    }
+    allGroups(){
         return this.groups.map(function (group) {
             if (!!group) {
                 return group;
             }
         });
-    },
-    returnGroupByName: function (groupName){
+    }
+    returnGroupByName(groupName){
         if(!!groupName){
             for(var i=0; i<this.groups.length ; i++){
                 if(this.groups[i].groupName === groupName){
@@ -41,10 +38,13 @@ Groups.prototype = {
             return null; //throw "group with such a name was not found"
         }
         return null;
-    },
-    isEmpty:function(){
+    }
+    isEmpty(){
         return this.groups.length === 0;
     }
-};
+}
+
+
+
 
 module.exports.Groups = Groups;

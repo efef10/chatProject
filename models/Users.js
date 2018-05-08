@@ -1,24 +1,23 @@
 const {User}    = require('./User.js');
 
-function Users(users){
-    //private properties
-    this.users = users || [];
+class Users{
+    constructor(users){
+        this.users = users || [];
+    }
 
-}
-
-Users.prototype = {
-    addUser:function(userName, age, password){
+    addUser(userName, age, password){
         this.users.push(new User(userName, age, password));
-    },
+    }
 
-    removeUser:function(userName){
+    removeUser(userName){
         var user = this.returnUserByName(userName)
         var index = this.users.indexOf(user);
-        user.removeUserEvent.fire(userName);
-        this.users.splice(index,1);
-    },
+        // user.removeUserEvent.fire(userName);
 
-    returnUserByName: function (userName){
+        this.users.splice(index,1);
+    }
+
+    returnUserByName(userName){
         if(!!userName){
             for(var i=0; i<this.users.length ; i++){
                 if(this.users[i].userName === userName){
@@ -28,25 +27,24 @@ Users.prototype = {
             return null;
         }
         return null;
-    },
+    }
 
-    isEmpty:function(){
+    isEmpty(){
         return this.users.length === 0;
-    },
+    }
 
-    getUsers:function(){
+    getUsers(){
         return this.users;
-    },
+    }
 
-    allUsersNames:function(){
+    allUsersNames(){
         return this.users.map(function (user) {
             if (!!user) {
                 return user.userName;
             }
         });
     }
-};
+}
 
 
 module.exports.Users = Users;
-module.exports.Users.returnUserByName = Users;

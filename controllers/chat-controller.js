@@ -11,6 +11,15 @@ class ChatController{
     }
 
     init() {
+        //initial examples
+        this.chat.users.users.push(new User("u1",22,"passss"));
+        this.chat.users.users.push(new User("u2",22,"passss"));
+        this.chat.users.users.push(new User("u3",22,"passss"));
+
+        this.rootMenu();
+    }
+
+    rootMenu(){
         Menu.RootMenu(this.decision.bind(this));
     }
 
@@ -26,7 +35,7 @@ class ChatController{
 
             case "v": //view users
                 Menu.log(this.chat.getUsersName());
-                this.init();
+                this.rootMenu();
                 break;
 
             case "c": // create group
@@ -39,7 +48,7 @@ class ChatController{
 
             case "g": // get all groups
                 Menu.log(this.chat.allGroupsNames());
-                this.init();
+                this.rootMenu();
                 break;
 
             case "a": // add user to group
@@ -52,7 +61,7 @@ class ChatController{
 
             case "l": // get groups and their users
                 this.allGroupsAndUsers();
-                this.init();
+                this.rootMenu();
                 break;
 
             case "u": //update user age
@@ -65,12 +74,12 @@ class ChatController{
 
             case "o":
                 this.allGroupsOfUser();
-                this.init();
+                this.rootMenu();
                 break;
 
             case "s":
                 this.showGroupPath();
-                this.init();
+                this.rootMenu();
                 break;
 
             case "f":
@@ -83,7 +92,7 @@ class ChatController{
 
             default: {
                 Menu.log("please choose a letter from the menu");
-                this.init();
+                this.rootMenu();
             }
         }
     }
@@ -94,7 +103,7 @@ class ChatController{
             var myAge;
             if (this.userNameExists(userName)) {
                 Menu.log(`user ${userName} already exists`);
-                this.init();
+                this.rootMenu();
                 return;
             }
             else {
@@ -119,7 +128,7 @@ class ChatController{
                 Menu.ask("enter password? \n",(password) => {
                     this.chat.addUser(myUserName, myAge, password);
                     Menu.log(`user ${userName} added successfully`);
-                    this.init();
+                    this.rootMenu();
                 });
             }
         });
@@ -129,12 +138,13 @@ class ChatController{
         Menu.ask("choose username \n",(userName) => {
             if (!this.userNameExists(userName)) {
                 Menu.log(`user ${userName} not exists`)
-                this.init();
+                this.rootMenu();
                 return;
             }
             else {
                 this.chat.removeUser(userName);
                 Menu.log(`user ${userName} removed successfully`);
+                this.rootMenu();
                 return;
             }
         });
@@ -148,7 +158,7 @@ class ChatController{
             if(this.chat._rootIsNull()){
                 if(this.chat.addGroup(myGroupName)){
                     Menu.log(`group ${myGroupName} added successfully as root group`);
-                    this.init();
+                    this.rootMenu();
                     return;
                 }
             }
@@ -161,19 +171,19 @@ class ChatController{
                     foundGroups = this.chat.searchGroup(parentGroupName);
                     if (foundGroups.length == 0) {
                         Menu.log(`group ${parentGroupName} does not exist`)
-                        this.init();
+                        this.rootMenu();
                         return;
                     }
                     else if (foundGroups.length == 1){
                         var group = this.chat.getGroupByPath(foundGroups[0]);
                         if(group.groupAlreadyInGroup(myGroupName)){
                             Menu.log(`group ${myGroupName} already in group ${parentGroupName}`);
-                            this.init();
+                            this.rootMenu();
                             return;
                         }
                         this.chat.addGroup(myGroupName,foundGroups[0]);
                         Menu.log(`group ${myGroupName} added successfully to group ${parentGroupName}`);
-                        this.init();
+                        this.rootMenu();
                     }
                     else{
                         chooseGroupMenu = "";
@@ -188,9 +198,14 @@ class ChatController{
             function getChosenPath(){
                 Menu.ask(`in which group do you want to add group ${myGroupName} 
 ${chooseGroupMenu}`, (chosenPath)=> {
+                    if(chosenPath>=foundGroups.length){
+                        Menu.log("please choose legal option\n");
+                        getChosenPath.call(this)
+                        return;
+                    }
                     this.chat.addGroup(myGroupName,foundGroups[chosenPath]);
                     Menu.log(`group ${myGroupName} added successfully`);
-                    this.init();
+                    this.rootMenu();
                     return;
                 });
             }
@@ -205,13 +220,13 @@ ${chooseGroupMenu}`, (chosenPath)=> {
             foundGroups = this.chat.searchGroup(groupName);
             if (foundGroups.length == 0) {
                 Menu.log(`group ${groupName} does not exist`)
-                this.init();
+                this.rootMenu();
                 return;
             }
             else if (foundGroups.length == 1){
                 this.chat.removeGroup(groupName,foundGroups[0]);
                 Menu.log(`group ${groupName} removed successfully `);
-                this.init();
+                this.rootMenu();
             }
             else{
                 chooseGroupMenu = "";
@@ -224,9 +239,14 @@ ${chooseGroupMenu}`, (chosenPath)=> {
             function getChosenPath(){
                 Menu.ask(`which group do you want to remove ? 
 ${chooseGroupMenu}`, (chosenPath)=> {
+                    if(chosenPath>=foundGroups.length){
+                        Menu.log("please choose legal option\n");
+                        getChosenPath.call(this)
+                        return;
+                    }
                     this.chat.removeGroup(myGroupName,foundGroups[chosenPath]);
                     Menu.log(`group ${myGroupName} removed successfully`);
-                    this.init();
+                    this.rootMenu();
                     return;
                 });
             }
@@ -266,7 +286,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
             var parentGroup;
             if (!this.userNameExists(userName)) {
                 Menu.log(`user ${userName} not exists`)
-                this.init();
+                this.rootMenu();
                 return;
             }
             else {
@@ -279,14 +299,14 @@ ${chooseGroupMenu}`, (chosenPath)=> {
                     parentGroup = parentGroupName;
                     if (foundGroups.length == 0) {
                         Menu.log(`group ${parentGroupName} does not exist`)
-                        this.init();
+                        this.rootMenu();
                         return;
                     }
                     else if (foundGroups.length == 1){
                         var group = this.chat.getGroupByPath(foundGroups[0]);
                         if(group.userInGroup(myUserName)){
                             Menu.log(`user ${myUserName} already in group ${parentGroupName}`);
-                            this.init();
+                            this.rootMenu();
                             return;
                         }
                         if(this.chat.addUserToGroup(myUserName,foundGroups[0])){
@@ -296,7 +316,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
                             Menu.log(`could'nt add user ${myUserName} to group ${parentGroupName}`);
                         }
 
-                        this.init();
+                        this.rootMenu();
                     }
                     else{
                         chooseGroupMenu = "";
@@ -311,15 +331,20 @@ ${chooseGroupMenu}`, (chosenPath)=> {
             function getChosenPath(){
                 Menu.ask(`in which group do you want to add user ${myUserName} 
 ${chooseGroupMenu}`, (chosenPath)=> {
+                    if(chosenPath>=foundGroups.length){
+                        Menu.log("please choose legal option\n");
+                        getChosenPath.call(this)
+                        return;
+                    }
                     var group = this.chat.getGroupByPath(foundGroups[chosenPath]);
                     if(group.userInGroup(myUserName)){
                         Menu.log(`user ${myUserName} already in group ${parentGroup}`);
-                        this.init();
+                        this.rootMenu();
                         return;
                     }
                     this.chat.addUserToGroup(myUserName,foundGroups[chosenPath]);
                     Menu.log(`user ${myUserName} added successfully`);
-                    this.init();
+                    this.rootMenu();
                     return;
                 });
             }
@@ -335,7 +360,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
             var parentGroup;
             if (!this.userNameExists(userName)) {
                 Menu.log(`user ${userName} not exists`)
-                this.init();
+                this.rootMenu();
                 return;
             }
             else {
@@ -348,19 +373,19 @@ ${chooseGroupMenu}`, (chosenPath)=> {
                     parentGroup = parentGroupName;
                     if (foundGroups.length == 0) {
                         Menu.log(`group ${parentGroupName} does not exist`)
-                        this.init();
+                        this.rootMenu();
                         return;
                     }
                     else if (foundGroups.length == 1){
                         var group = this.chat.getGroupByPath(foundGroups[0]);
                         if(!group.userInGroup(myUserName)){
                             Menu.log(`user ${myUserName} not exists in group ${parentGroupName}`);
-                            this.init();
+                            this.rootMenu();
                             return;
                         }
                         this.chat.removeUserFromGroup(myUserName,foundGroups[0]);
                         Menu.log(`user ${myUserName} removed successfully from group ${parentGroupName}`);
-                        this.init();
+                        this.rootMenu();
                     }
                     else{
                         chooseGroupMenu = "";
@@ -375,15 +400,20 @@ ${chooseGroupMenu}`, (chosenPath)=> {
             function getChosenPath(){
                 Menu.ask(`choose group to remove user ${myUserName} 
 ${chooseGroupMenu}`, (chosenPath)=> {
+                    if(chosenPath>=foundGroups.length){
+                        Menu.log("please choose legal option\n");
+                        getChosenPath.call(this)
+                        return;
+                    }
                     var group = this.chat.getGroupByPath(foundGroups[chosenPath]);
                     if(!group.userInGroup(myUserName)){
                         Menu.log(`user ${myUserName} not exists in group ${parentGroup}`);
-                        this.init();
+                        this.rootMenu();
                         return;
                     }
                     this.chat.removeUserFromGroup(myUserName,foundGroups[chosenPath]);
                     Menu.log(`user ${myUserName} removed successfully`);
-                    this.init();
+                    this.rootMenu();
                     return;
                 });
             }
@@ -395,7 +425,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
         Menu.ask("enter user name \n",(userName)=>{
             if(!this.userNameExists(userName)){
                 Menu.log(`user ${userName} not exists`);
-                this.init();
+                this.rootMenu();
                 return;
             }
             else{
@@ -411,7 +441,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
                     else {
                         this.chat.setUserAge(userName, age);
                         Menu.log(`user's age was updated successfully`);
-                        this.init();
+                        this.rootMenu();
                     }
                 });
             }
@@ -423,7 +453,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
             var user;
             if(!this.userNameExists(userName)){
                 Menu.log(`user ${userName} not exists`);
-                this.init();
+                this.rootMenu();
                 return;
             }
             else{
@@ -439,7 +469,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
                     else {
                         if(tries === 0){
                             Menu.log(`error, change password failed due to too much wrong tries`);
-                            this.init();
+                            this.rootMenu();
                             return;
                         }else{
                             Menu.log(`entered password does not match old password, you have ${tries} tries left`);
@@ -453,7 +483,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
                 Menu.ask("enter new password \n",(password)=>{
                     this.chat.setUserPassword(user.getUserName(),password);
                     Menu.log(`user's password was updated successfully`);
-                    this.init();
+                    this.rootMenu();
                 });
             }
         });
@@ -463,12 +493,12 @@ ${chooseGroupMenu}`, (chosenPath)=> {
         Menu.ask("choose username \n",(userName) => {
             if (!this.userNameExists(userName)) {
                 Menu.log(`user ${userName} not exists`)
-                this.init();
+                this.rootMenu();
                 return;
             }
             else {
-                Menu.log(this.chat.getGroupsOfUser(userName));
-                this.init();
+                Menu.log(this.chat.nameOfAllGroupsOfUser(userName));
+                this.rootMenu();
                 return;
             }
         });
@@ -478,7 +508,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
         Menu.ask("choose group \n",(groupName) => {
             var foundGroups = this.chat.searchGroup(groupName);
             Menu.log(foundGroups);
-            this.init();
+            this.rootMenu();
             return;
         });
     }
@@ -491,7 +521,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
             foundGroups = this.chat.searchGroup(groupName);
             if (foundGroups.length == 0) {
                 Menu.log(`group ${groupName} does not exist`)
-                this.init();
+                this.rootMenu();
                 return;
             }
             else if (foundGroups.length == 1){
@@ -501,7 +531,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
                 else{
                     Menu.log(`couldn't flat group ${groupName}`);
                 }
-                this.init();
+                this.rootMenu();
                 return;
             }
             else{
@@ -521,7 +551,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
                     else{
                         Menu.log(`couldn't flat group ${myGroupName}`);
                     }
-                    this.init();
+                    this.rootMenu();
                     return;
                 });
             }

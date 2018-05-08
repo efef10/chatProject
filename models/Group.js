@@ -1,62 +1,66 @@
 const {User}    = require('./User.js');
 const Users    = require('./Users.js').Users;
 
-function Group(groupName, children, parent, count){
-    this.groupName  = groupName;
-    this.children   = children || [];
-    this.parent = parent || null;
-    this.usersCount = count || 0;
-}
+class Group{
+    constructor(groupName, children, parent, count) {
+        this.groupName  = groupName;
+        this.children   = children || [];
+        this.parent = parent || null;
+        this.usersCount = count || 0;
+    }
 
-Group.prototype = {
-
-    addUser:function(user){
+    addUser(user){
         if((!this.hasChildren()) || (this.children[0] instanceof User)) {
             this.children.push(user);
             this.usersCount++;
             this.rollUpdatedCount('+',1);
-            return true;
+            return this;
         }
         else{
             if(this.groupAlreadyInGroup("others")){
                 for(var i =0; i<this.children.length ; i++){
                     if(this.children[i].getGroupName()==="others"){
-                        this.children[i].addUser(user);
-                        this.usersCount++;
-                        this.rollUpdatedCount('+',1,this);
-                        return true
+                        if(this.children[i].userInGroup(user.getUserName())){
+                            return null;
+                        }
+                        else{
+                            // user.setParent(this.children[i]);
+                            this.children[i].addUser(user);
+                            return this.children[i];
+                        }
                     }
                 }
+                return null;
             }
             this.children.push(new Group("others", [user], this,1));
             this.usersCount++;
             this.rollUpdatedCount('+',1);
-            return true;
+            return this;
         }
-    },
+    }
 
-    setParent:function(parent){
+    setParent(parent){
         this.parent = parent;
-    },
+    }
 
-    removeUser:function(userName){
+    removeUser(userName){
         if(this.hasChildren() && (this.children[0] instanceof User)){
             this.children.forEach(function(child, i){
-               if (child.getUserName() === userName){
-                   this.children.splice(i,1);
-                   this.usersCount--;
-                   this.rollUpdatedCount('-',1);
-                   return true;
-               }
+                if (child.getUserName() === userName){
+                    this.children.splice(i,1);
+                    this.usersCount--;
+                    this.rollUpdatedCount('-',1);
+                    return true;
+                }
             }.bind(this));
             return true;
         }
         else{
             return false;
         }
-    },
+    }
 
-    addNewGroup :function(groupName){
+    addNewGroup (groupName){
         if(this.hasChildren() && (this.children[0] instanceof User)){
             var tmpGroup= new Group("others",this.children, this,this.getChildren().length);
             this.children = [];
@@ -64,9 +68,9 @@ Group.prototype = {
         }
         //anyway, insert a new group:
         this.children.push(new Group(groupName,[],this));
-    },
+    }
 
-    addGroup : function(group){
+    addGroup (group){
         var myGroup = group;
         myGroup.setParent(this);
         this.rollUpdatedCount('+',myGroup.getUserCount(), this)
@@ -78,9 +82,9 @@ Group.prototype = {
         //anyway, insert a new group:
 
         this.children.push(myGroup);
-    },
+    }
 
-    removeGroup:function(groupName){
+    removeGroup(groupName){
         if(!this.hasChildren() || (this.children[0] instanceof User)){
             return false;
         }
@@ -90,37 +94,35 @@ Group.prototype = {
                 this.children.splice(i,1);
                 return true;
             }
-            // if(this.children[i].removeGroup(groupName)){
-            //     return true;
-            // }
         }
         return false;
-    },
+    }
 
-    getChildren:function(){
+    getChildren(){
         return this.children;
-    },
-    setChildren:function(newChildren){
+    }
+
+    setChildren(newChildren){
         this.children = newChildren;
-    },
+    }
 
-    getParent:function(){
+    getParent(){
         return this.parent;
-    },
+    }
 
-    getGroupName:function(){
+    getGroupName(){
         return this.groupName;
-    },
+    }
 
     setUserCount(newCount){
         this.usersCount = newCount;
-    },
+    }
 
     getUserCount(){
         return this.usersCount;
-    },
+    }
 
-    userInGroup:function(userName){
+    userInGroup(userName){
         var children = this.children;
         if (!this.hasChildren() || children[0] instanceof Group){
             return false;
@@ -132,9 +134,9 @@ Group.prototype = {
             }
         }
         return false
-    },
+    }
 
-    groupAlreadyInGroup:function(groupName){
+    groupAlreadyInGroup(groupName){
         var children = this.children;
         if (!this.hasChildren() || children[0] instanceof User){
             return false;
@@ -145,13 +147,13 @@ Group.prototype = {
             }
         }
         return false;
-    },
+    }
 
-    hasChildren:function(){
+    hasChildren(){
         return this.children.length !== 0;
-    },
+    }
 
-    rollUpdatedCount:function(sign,count,group){
+    rollUpdatedCount(sign,count,group){
         var myGroup = group || this;
         while(myGroup.getParent()){
             myGroup = myGroup.getParent();
@@ -163,9 +165,9 @@ Group.prototype = {
             }
 
         }
-    },
+    }
 
-    flat:function(){
+    flat(){
         if(this.getParent() === null){
             return false;
         }
@@ -179,6 +181,8 @@ Group.prototype = {
         }
         return false;
     }
-};
+}
+
+
 
 module.exports.Group = Group;
