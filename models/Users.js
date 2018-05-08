@@ -17,6 +17,14 @@ class Users{
         this.users.splice(index,1);
     }
 
+    setUserAge(userName, newAge){
+        return this.returnUserByName(userName).setAge(newAge);
+    }
+
+    setUserPassword(userName, newPassword){
+        return this.returnUserByName(userName).setPassword(newPassword);
+    }
+
     returnUserByName(userName){
         if(!!userName){
             for(var i=0; i<this.users.length ; i++){
@@ -27,14 +35,6 @@ class Users{
             return null;
         }
         return null;
-    }
-
-    isEmpty(){
-        return this.users.length === 0;
-    }
-
-    getUsers(){
-        return this.users;
     }
 
     allUsersNames(){

@@ -1,5 +1,3 @@
-const {Users} = require('../models/Users.js');
-const {Groups} = require('../models/Groups.js');
 const {User} = require('../models/User.js');
 const {Group} = require('../models/Group.js');
 const {Chat} = require('../models/Chat.js');
@@ -34,7 +32,7 @@ class ChatController{
                 break;
 
             case "v": //view users
-                Menu.log(this.chat.getUsersName());
+                Menu.log(this.chat.allUsersNames());
                 this.rootMenu();
                 break;
 
@@ -256,7 +254,7 @@ ${chooseGroupMenu}`, (chosenPath)=> {
     allGroupsAndUsers(){
         var output = "";
         var gAndU = this.chat.returnGroupsAndUsers();
-        for (var i=0;i<gAndU.length;i++){
+        for (var i=gAndU.length-1;i>=0;i--){
             for(var j=0;j<gAndU[i].level;j++){
                 output+="--";
             }
@@ -342,8 +340,12 @@ ${chooseGroupMenu}`, (chosenPath)=> {
                         this.rootMenu();
                         return;
                     }
-                    this.chat.addUserToGroup(myUserName,foundGroups[chosenPath]);
-                    Menu.log(`user ${myUserName} added successfully`);
+                    if(this.chat.addUserToGroup(myUserName,foundGroups[chosenPath])){
+                        Menu.log(`user ${myUserName} added successfully `);
+                    }
+                    else{
+                        Menu.log(`could'nt add user ${myUserName}`);
+                    }
                     this.rootMenu();
                     return;
                 });

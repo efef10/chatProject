@@ -1,11 +1,8 @@
-// const {RemoveUserEvent}    = require('./RemoveUserEvent.js');
-
 class User{
     constructor(userName, age, password){
         this.userName = userName;
         this.age = age;
         this.password = password;
-        // this.removeUserEvent = new RemoveUserEvent();  //event observer
     }
 
     getUserName() {
@@ -24,9 +21,6 @@ class User{
     setPassword(password) {
         this.password = password;
     }
-    // getHandlers(){
-    //     return this.removeUserEvent.getHandlers();
-    // }
 }
 
 module.exports.User = User;
