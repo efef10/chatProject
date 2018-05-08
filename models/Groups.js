@@ -15,7 +15,7 @@ Groups.prototype = {
     },
 
     removeGroup : function(groupName){
-        this.groups.splice(this.groups.indexOf(this.returnGroupByName(groupName)),1);
+        var group = this.returnGroupByName(groupName);
     },
     allGroupsNames:function(){
         return this.groups.map(function (group) {

@@ -14,12 +14,16 @@ User.prototype = {
     },
     setAge : function(age){
         this.age = age;
+        return true;
     },
     getPassword: function() {
         return this.password;
     },
     setPassword: function(password) {
         this.password = password;
+    },
+    getHandlers(){
+        return this.removeUserEvent.getHandlers();
     }
 
 }
@@ -43,8 +47,13 @@ RemoveUserEvent.prototype = {
     },
     fire: function(userName) {
         this.handlers.forEach(function(item) {
-            item.fn.call(this,item.user,item.group);
+            item.group.removeUser(item.user.getUserName());
+
+            // item.call(this,item.user.getUsersName(),item.group.getGroupName());
         });
+    },
+    getHandlers(){
+        return this.handlers;
     }
 
 };

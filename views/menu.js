@@ -6,7 +6,7 @@ const rl = readline.createInterface({
 });
 
 function RootMenu(callback){
-    rl.question("hi, what action would you like to perform? \n" +
+    rl.question("what action would you like to perform? \n" +
         "[n] new user \n" +
         "[r] remove user \n" +
         "[v] view all users \n" +
@@ -18,6 +18,9 @@ function RootMenu(callback){
         "[e] delete user from group \n" +
         "[u] update user age \n" +
         "[p] update user password \n" +
+        "[o] show all group of specific user\n" +
+        "[s] show group path\n" +
+        "[f] flat a group\n" +
         "[q] quit \n",callback);
 }
 
@@ -38,4 +41,4 @@ module.exports = {
     ask,
     log,
     quit
-}
+};

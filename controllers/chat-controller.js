@@ -25,7 +25,7 @@ class ChatController{
                 break;
 
             case "v": //view users
-                Menu.log(this.chat.getUsers().allUsersNames());
+                Menu.log(this.chat.getUsersName());
                 this.init();
                 break;
 
@@ -38,12 +38,7 @@ class ChatController{
                 break;
 
             case "g": // get all groups
-                Menu.log(this.chat.getGroups().allGroupsNames());
-                this.init();
-                break;
-
-            case "l": // get groups and their users
-                this.allGroupsAndUsers();
+                Menu.log(this.chat.allGroupsNames());
                 this.init();
                 break;
 
@@ -55,12 +50,31 @@ class ChatController{
                 this.removeUserFromGroup();
                 break;
 
+            case "l": // get groups and their users
+                this.allGroupsAndUsers();
+                this.init();
+                break;
+
             case "u": //update user age
                 this.updateAge();
                 break;
 
             case "p": //update password
                 this.updatePassword();
+                break;
+
+            case "o":
+                this.allGroupsOfUser();
+                this.init();
+                break;
+
+            case "s":
+                this.showGroupPath();
+                this.init();
+                break;
+
+            case "f":
+                this.flatGroup();
                 break;
 
             case "q": // quit
@@ -76,7 +90,6 @@ class ChatController{
 
     createUser() {
         Menu.ask("what is your username? \n",(userName) => {
-            // console.log('create user this', this);
             var myUserName = userName;
             var myAge;
             if (this.userNameExists(userName)) {
@@ -104,7 +117,7 @@ class ChatController{
 
             function getUserPassword() {
                 Menu.ask("enter password? \n",(password) => {
-                    this.chat.getUsers().addUser(myUserName, myAge, password);
+                    this.chat.addUser(myUserName, myAge, password);
                     Menu.log(`user ${userName} added successfully`);
                     this.init();
                 });
@@ -120,9 +133,8 @@ class ChatController{
                 return;
             }
             else {
-                this.chat.getUsers().removeUser(userName);
+                this.chat.removeUser(userName);
                 Menu.log(`user ${userName} removed successfully`);
-                this.init();
                 return;
             }
         });
@@ -130,74 +142,117 @@ class ChatController{
 
     createGroup(){
         Menu.ask("enter group name \n",(groupName) => {
-            var myGroupName = groupName;
-            if (this.chat.searchGroup(groupName) !== -1) {
-                Menu.log(`group ${groupName} already exists`)
-                this.init();
-                return;
+        var myGroupName = groupName;
+        var foundGroups;
+        var chooseGroupMenu;
+            if(this.chat._rootIsNull()){
+                if(this.chat.addGroup(myGroupName)){
+                    Menu.log(`group ${myGroupName} added successfully as root group`);
+                    this.init();
+                    return;
+                }
             }
             else{
                 getParentGroup.call(this);
             }
 
             function getParentGroup(){
-                Menu.ask(`in which group do you want to add group ${myGroupName} \n`, (parentGroupName)=>{
-                    if (this.chat.searchGroup(parentGroupName) === -1) {
+                Menu.ask(`in which group do you want to add group ${myGroupName} \n`, (parentGroupName)=> {
+                    foundGroups = this.chat.searchGroup(parentGroupName);
+                    if (foundGroups.length == 0) {
                         Menu.log(`group ${parentGroupName} does not exist`)
                         this.init();
                         return;
                     }
-                    else{
-                        if(this.chat.addGroup(myGroupName, parentGroupName));{
-                            Menu.log(`group ${myGroupName} added successfully to group ${parentGroupName}`);
+                    else if (foundGroups.length == 1){
+                        var group = this.chat.getGroupByPath(foundGroups[0]);
+                        if(group.groupAlreadyInGroup(myGroupName)){
+                            Menu.log(`group ${myGroupName} already in group ${parentGroupName}`);
                             this.init();
                             return;
                         }
+                        this.chat.addGroup(myGroupName,foundGroups[0]);
+                        Menu.log(`group ${myGroupName} added successfully to group ${parentGroupName}`);
+                        this.init();
+                    }
+                    else{
+                        chooseGroupMenu = "";
+                        for(var i=0;i<foundGroups.length; i++){
+                            chooseGroupMenu += `[${i}] - ${foundGroups[i]} \n`;
+                        }
+                        getChosenPath.call(this);
                     }
                 });
             }
 
+            function getChosenPath(){
+                Menu.ask(`in which group do you want to add group ${myGroupName} 
+${chooseGroupMenu}`, (chosenPath)=> {
+                    this.chat.addGroup(myGroupName,foundGroups[chosenPath]);
+                    Menu.log(`group ${myGroupName} added successfully`);
+                    this.init();
+                    return;
+                });
+            }
         });
     }
 
     removeGroup(){
-        Menu.ask("choose group \n",(groupName) => {
-            if (!this.groupNameExists(groupName)) {
-                Menu.log(`group ${groupName} not exists`)
+        Menu.ask("enter group name to delete\n",(groupName) => {
+            var myGroupName = groupName;
+            var foundGroups;
+            var chooseGroupMenu;
+            foundGroups = this.chat.searchGroup(groupName);
+            if (foundGroups.length == 0) {
+                Menu.log(`group ${groupName} does not exist`)
                 this.init();
                 return;
             }
-            else {
-                this.chat.getGroups().removeGroup(groupName);
-                Menu.log(`group ${groupName} removed successfully`);
+            else if (foundGroups.length == 1){
+                this.chat.removeGroup(groupName,foundGroups[0]);
+                Menu.log(`group ${groupName} removed successfully `);
                 this.init();
-                return;
+            }
+            else{
+                chooseGroupMenu = "";
+                for(var i=0;i<foundGroups.length; i++){
+                    chooseGroupMenu += `[${i}] - ${foundGroups[i]} \n`;
+                }
+                getChosenPath.call(this);
+            }
+
+            function getChosenPath(){
+                Menu.ask(`which group do you want to remove ? 
+${chooseGroupMenu}`, (chosenPath)=> {
+                    this.chat.removeGroup(myGroupName,foundGroups[chosenPath]);
+                    Menu.log(`group ${myGroupName} removed successfully`);
+                    this.init();
+                    return;
+                });
             }
         });
     }
 
     allGroupsAndUsers(){
-        var groups = this.chat.getGroups().allGroups();
-        for (var i=0 ; i<groups.length ; i++){
-            Menu.log("group " + groups[i].groupName + ":");
-            var currentGroupUsers = groups[i].getUsers();
-            if(!!currentGroupUsers) {
-                for (var j = 0; j < currentGroupUsers.length; j++) {
-                    Menu.log(currentGroupUsers[j].getUserName() + ", Age: " + currentGroupUsers[j].getAge());
-                }
+        var output = "";
+        var gAndU = this.chat.returnGroupsAndUsers();
+        for (var i=0;i<gAndU.length;i++){
+            for(var j=0;j<gAndU[i].level;j++){
+                output+="--";
             }
+            var count ="";
+            if(gAndU[i].type=="Group")
+            {
+                count ="("+ (gAndU[i].count).toString() +")";
+            }
+            output+=gAndU[i].type +":"+gAndU[i].name + count +"\n";
+
         }
+        Menu.log(output);
     }
 
     userNameExists(userName) {
-        if (this.chat.getUsers().returnUserByName(userName)) {
-            return true;
-        }
-        return false;
-    }
-
-    groupNameExists(groupName) {
-        if (this.chat.getGroups().returnGroupByName(groupName)) {
+        if (this.chat.returnUserByName(userName)) {
             return true;
         }
         return false;
@@ -205,6 +260,10 @@ class ChatController{
 
     addUserToGroup(){
         Menu.ask("please enter userName \n", (userName)=>{
+            var myUserName = userName;
+            var foundGroups;
+            var chooseGroupMenu;
+            var parentGroup;
             if (!this.userNameExists(userName)) {
                 Menu.log(`user ${userName} not exists`)
                 this.init();
@@ -215,30 +274,65 @@ class ChatController{
             }
 
             function getGroupName(){
-                Menu.ask("please enter group name \n",(groupName)=>{
-                    if (!this.groupNameExists(groupName)) {
-                        Menu.log(`group ${groupName} not exists`)
+                Menu.ask(`in which group do you want to add user ${myUserName} \n`, (parentGroupName)=> {
+                    foundGroups = this.chat.searchGroup(parentGroupName);
+                    parentGroup = parentGroupName;
+                    if (foundGroups.length == 0) {
+                        Menu.log(`group ${parentGroupName} does not exist`)
                         this.init();
                         return;
                     }
-                    else if(this.chat.getGroups().returnGroupByName(groupName).indexOfUserInGroup(userName) >= 0){
-                        Menu.log(`user ${userName} already in group ${groupName}`)
+                    else if (foundGroups.length == 1){
+                        var group = this.chat.getGroupByPath(foundGroups[0]);
+                        if(group.userInGroup(myUserName)){
+                            Menu.log(`user ${myUserName} already in group ${parentGroupName}`);
+                            this.init();
+                            return;
+                        }
+                        if(this.chat.addUserToGroup(myUserName,foundGroups[0])){
+                            Menu.log(`user ${myUserName} added successfully to group ${parentGroupName}`);
+                        }
+                        else{
+                            Menu.log(`could'nt add user ${myUserName} to group ${parentGroupName}`);
+                        }
+
                         this.init();
-                        return;
                     }
                     else{
-                        this.chat.addUserToGroup(userName,groupName);
-                        Menu.log(`user ${userName} added successfully to group ${groupName}`);
-                        this.init();
-                        return
+                        chooseGroupMenu = "";
+                        for(var i=0;i<foundGroups.length; i++){
+                            chooseGroupMenu += `[${i}] - ${foundGroups[i]} \n`;
+                        }
+                        getChosenPath.call(this);
                     }
                 });
             }
+
+            function getChosenPath(){
+                Menu.ask(`in which group do you want to add user ${myUserName} 
+${chooseGroupMenu}`, (chosenPath)=> {
+                    var group = this.chat.getGroupByPath(foundGroups[chosenPath]);
+                    if(group.userInGroup(myUserName)){
+                        Menu.log(`user ${myUserName} already in group ${parentGroup}`);
+                        this.init();
+                        return;
+                    }
+                    this.chat.addUserToGroup(myUserName,foundGroups[chosenPath]);
+                    Menu.log(`user ${myUserName} added successfully`);
+                    this.init();
+                    return;
+                });
+            }
         });
+
     }
 
     removeUserFromGroup(){
         Menu.ask("please enter userName \n", (userName)=>{
+            var myUserName = userName;
+            var foundGroups;
+            var chooseGroupMenu;
+            var parentGroup;
             if (!this.userNameExists(userName)) {
                 Menu.log(`user ${userName} not exists`)
                 this.init();
@@ -249,26 +343,52 @@ class ChatController{
             }
 
             function getGroupName(){
-                Menu.ask("please enter group name \n",(groupName)=>{
-                    if (!this.groupNameExists(groupName)) {
-                        Menu.log(`group ${groupName} not exists`)
+                Menu.ask(`from which group do you want to remove user ${myUserName} \n`, (parentGroupName)=> {
+                    foundGroups = this.chat.searchGroup(parentGroupName);
+                    parentGroup = parentGroupName;
+                    if (foundGroups.length == 0) {
+                        Menu.log(`group ${parentGroupName} does not exist`)
                         this.init();
                         return;
                     }
-                    else if((this.chat.getGroups().returnGroupByName(groupName).indexOfUserInGroup(userName)) === -1){
-                        Menu.log(`user ${userName} not in group ${groupName}`)
+                    else if (foundGroups.length == 1){
+                        var group = this.chat.getGroupByPath(foundGroups[0]);
+                        if(!group.userInGroup(myUserName)){
+                            Menu.log(`user ${myUserName} not exists in group ${parentGroupName}`);
+                            this.init();
+                            return;
+                        }
+                        this.chat.removeUserFromGroup(myUserName,foundGroups[0]);
+                        Menu.log(`user ${myUserName} removed successfully from group ${parentGroupName}`);
                         this.init();
-                        return;
                     }
                     else{
-                        this.chat.removeUserFromGroup(userName,groupName);
-                        Menu.log(`user ${userName} removed successfully from group ${groupName}`);
-                        this.init();
-                        return
+                        chooseGroupMenu = "";
+                        for(var i=0;i<foundGroups.length; i++){
+                            chooseGroupMenu += `[${i}] - ${foundGroups[i]} \n`;
+                        }
+                        getChosenPath.call(this);
                     }
                 });
             }
+
+            function getChosenPath(){
+                Menu.ask(`choose group to remove user ${myUserName} 
+${chooseGroupMenu}`, (chosenPath)=> {
+                    var group = this.chat.getGroupByPath(foundGroups[chosenPath]);
+                    if(!group.userInGroup(myUserName)){
+                        Menu.log(`user ${myUserName} not exists in group ${parentGroup}`);
+                        this.init();
+                        return;
+                    }
+                    this.chat.removeUserFromGroup(myUserName,foundGroups[chosenPath]);
+                    Menu.log(`user ${myUserName} removed successfully`);
+                    this.init();
+                    return;
+                });
+            }
         });
+
     }
 
     updateAge(){
@@ -289,7 +409,7 @@ class ChatController{
                         getNewAge.call(this);
                     }
                     else {
-                        this.chat.getUsers().returnUserByName(userName).setAge(age);
+                        this.chat.setUserAge(userName, age);
                         Menu.log(`user's age was updated successfully`);
                         this.init();
                     }
@@ -307,7 +427,7 @@ class ChatController{
                 return;
             }
             else{
-                user = this.chat.getUsers().returnUserByName(userName);
+                user = this.chat.returnUserByName(userName);
                 getOldPassword.call(this,3);
             }
 
@@ -331,9 +451,78 @@ class ChatController{
 
             function getNewPassword(){
                 Menu.ask("enter new password \n",(password)=>{
-                    this.chat.getUsers().returnUserByName(userName).setPassword(password);
+                    this.chat.setUserPassword(user.getUserName(),password);
                     Menu.log(`user's password was updated successfully`);
                     this.init();
+                });
+            }
+        });
+    }
+
+    allGroupsOfUser(){
+        Menu.ask("choose username \n",(userName) => {
+            if (!this.userNameExists(userName)) {
+                Menu.log(`user ${userName} not exists`)
+                this.init();
+                return;
+            }
+            else {
+                Menu.log(this.chat.getGroupsOfUser(userName));
+                this.init();
+                return;
+            }
+        });
+    }
+
+    showGroupPath(){
+        Menu.ask("choose group \n",(groupName) => {
+            var foundGroups = this.chat.searchGroup(groupName);
+            Menu.log(foundGroups);
+            this.init();
+            return;
+        });
+    }
+
+    flatGroup(){
+        Menu.ask("enter group name to flat\n",(groupName) => {
+            var myGroupName = groupName;
+            var foundGroups;
+            var chooseGroupMenu;
+            foundGroups = this.chat.searchGroup(groupName);
+            if (foundGroups.length == 0) {
+                Menu.log(`group ${groupName} does not exist`)
+                this.init();
+                return;
+            }
+            else if (foundGroups.length == 1){
+                if(this.chat.flatGroup(foundGroups[0])){
+                    Menu.log(`group ${groupName} flattened successfully `);
+                }
+                else{
+                    Menu.log(`couldn't flat group ${groupName}`);
+                }
+                this.init();
+                return;
+            }
+            else{
+                chooseGroupMenu = "";
+                for(var i=0;i<foundGroups.length; i++){
+                    chooseGroupMenu += `[${i}] - ${foundGroups[i]} \n`;
+                }
+                getChosenPath.call(this);
+            }
+
+            function getChosenPath(){
+                Menu.ask(`which group do you want to flat ? 
+${chooseGroupMenu}`, (chosenPath)=> {
+                    if(this.chat.flatGroup(foundGroups[chosenPath])){
+                        Menu.log(`group ${myGroupName} flattened successfully `);
+                    }
+                    else{
+                        Menu.log(`couldn't flat group ${myGroupName}`);
+                    }
+                    this.init();
+                    return;
                 });
             }
         });
