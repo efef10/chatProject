@@ -59,6 +59,10 @@ class GroupsController {
                     Menu.log(`group ${myGroupName} added successfully as root group`);
                     this.backToMain();
                     return;
+                }else{
+                    Menu.log(`couldn't add group ${myGroupName}`);
+                    this.menu();
+                    return;
                 }
             }
             else{
@@ -80,9 +84,14 @@ class GroupsController {
                             this.menu();
                             return;
                         }
-                        this.chat.addGroup(myGroupName,foundGroups[0]);
-                        Menu.log(`group ${myGroupName} added successfully to group ${parentGroupName}`);
-                        this.backToMain();
+                        if(this.chat.addGroup(myGroupName,foundGroups[0])){
+                            Menu.log(`group ${myGroupName} added successfully to group ${parentGroupName}`);
+                            this.backToMain();
+                            return;
+                        }
+                        Menu.log(`couldn't add group ${myGroupName}`);
+                        this.menu();
+                        return;
                     }
                     else{
                         chooseGroupMenu = "";
@@ -102,9 +111,13 @@ ${chooseGroupMenu}`, (chosenPath)=> {
                         getChosenPath.call(this)
                         return;
                     }
-                    this.chat.addGroup(myGroupName,foundGroups[chosenPath]);
-                    Menu.log(`group ${myGroupName} added successfully`);
-                    this.backToMain();
+                    if(this.chat.addGroup(myGroupName,foundGroups[chosenPath])){
+                        Menu.log(`group ${myGroupName} added successfully`);
+                        this.backToMain();
+                        return;
+                    };
+                    Menu.log(`couldn't add group ${myGroupName}`);
+                    this.menu();
                     return;
                 });
             }

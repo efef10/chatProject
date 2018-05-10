@@ -78,6 +78,9 @@ class Group{
 
     addNewGroup (groupName){
         if(this.hasChildren() && (this.children[0] instanceof User)){
+            if(groupName === "others"){
+                return false;
+            }
             var tmpGroup= new Group("others",this.children, this,this.getChildren().length);
             this.children = [];
             this.children.push(tmpGroup);

@@ -51,8 +51,7 @@ const {nAryTree}   = require('../models/nAryTree.js');
          }
          var group = this.getGroupByPath(path);
          if (!!group){
-             group.addNewGroup(newGroupName);
-             return true;
+             return group.addNewGroup(newGroupName);
          }
          else{
              return false;
