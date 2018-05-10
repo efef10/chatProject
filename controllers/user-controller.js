@@ -1,6 +1,6 @@
 const Menu = require('../views/menu.js');
 
-class UsersController {
+class UserController {
     constructor(chat,backToMain) {
         this.chat = chat;
         this.backToMain = backToMain;
@@ -177,4 +177,4 @@ class UsersController {
     }
 }
 
-module.exports.UsersController = UsersController;
+module.exports.UsersController = UserController;

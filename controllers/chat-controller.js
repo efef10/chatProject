@@ -2,7 +2,7 @@ const {User} = require('../models/User.js');
 const {Group} = require('../models/Group.js');
 const {Chat} = require('../models/Chat.js');
 const Menu = require('../views/menu.js');
-const {UsersController} = require('./users-controller.js');
+const {UsersController} = require('./user-controller.js');
 const {GroupsController} = require('./groups-controller.js');
 const {GroupsUsersController} = require('./groups-users-controller.js');
 
